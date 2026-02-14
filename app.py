@@ -501,13 +501,18 @@ def chat():
         return jsonify({'success': False, 'message': 'Message is required'}), 400
     
     # Check if user has an active API key
-    if not get_active_api_key(current_user.id):
+    api_key = get_active_api_key(current_user.id)
+    if not api_key:
         return jsonify({
             'success': False,
             'message': 'Please add and activate a Groq API key in the API Keys section'
         }), 400
     
     try:
+        print(f"[CHAT] User {current_user.id} sent message: {message[:50]}...")
+        print(f"[CHAT] Language: {language}")
+        print(f"[CHAT] Has vector store: {current_user.id in vector_stores}")
+        print(f"[CHAT] Has conversation chain: {current_user.id in conversation_chains}")
         # Recreate chain if language changed or doesn't exist
         # This ensures language changes are respected mid-conversation
         chain = conversation_chains.get(current_user.id)
@@ -568,6 +573,9 @@ def chat():
         })
     
     except Exception as e:
+        print(f"[ERROR] Chat error for user {current_user.id}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
 
 

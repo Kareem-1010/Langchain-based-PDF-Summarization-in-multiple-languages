@@ -380,10 +380,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 addMessage(data.response, 'assistant');
             } else {
+                console.error('Chat error:', data.message);
                 addMessage(data.message || 'Sorry, I encountered an error.', 'assistant', true);
             }
         } catch (error) {
             removeTypingIndicator(typingId);
+            console.error('Fetch error:', error);
             addMessage('Sorry, I encountered an error. Please try again.', 'assistant', true);
         } finally {
             messageInput.disabled = false;
