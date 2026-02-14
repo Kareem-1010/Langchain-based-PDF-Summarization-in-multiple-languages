@@ -8,7 +8,7 @@ langchain==0.1.0
 langchain-groq==0.0.1
 langchain-community==0.0.10
 sentence-transformers==5.2.2
-faiss-cpu==1.7.4
+faiss-cpu==1.13.2
 pypdf2==3.0.1
 cryptography==41.0.7
 werkzeug==3.0.1
