@@ -43,10 +43,14 @@ def get_embeddings_model():
     global _embeddings_cache
     if _embeddings_cache is None:
         print("Loading embeddings model (one-time initialization)...")
+        import gc
         _embeddings_cache = HuggingFaceEmbeddings(
             model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={'device': 'cpu'}
+            model_kwargs={'device': 'cpu'},
+            encode_kwargs={'normalize_embeddings': True, 'batch_size': 32}
         )
+        # Force garbage collection to free memory
+        gc.collect()
         print("✓ Embeddings model loaded")
     return _embeddings_cache
 
