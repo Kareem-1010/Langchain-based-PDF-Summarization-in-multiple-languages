@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome - PDF Summarizer & QA{% endblock %}
+
+{% block public_content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        Multilingual PDF
+                        <span class="gradient-text">Summarizer & QA</span>
+                    </h1>
+                    <p class="hero-description">
+                        Transform your PDF documents into intelligent conversations. Ask questions, get summaries, and interact with your content in multiple languages powered by advanced AI.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="{{ url_for('signup') }}" class="btn btn-primary btn-lg">
+                            Get Started Free
+                            <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">
+                            Sign In
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="hero-image">
+                    <div class="floating-card">
+                        <i class="bi bi-file-earmark-pdf-fill"></i>
+                        <span>Upload PDF</span>
+                    </div>
+                    <div class="floating-card card-2">
+                        <i class="bi bi-chat-quote-fill"></i>
+                        <span>Ask Questions</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <i class="bi bi-translate"></i>
+                        <span>10+ Languages</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">Powerful Features</h2>
+            <p class="section-description">Everything you need to interact with your PDF documents intelligently</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <h3 class="feature-title">PDF Analysis</h3>
+                    <p class="feature-description">
+                        Upload any PDF document and our AI will intelligently analyze and understand its content for instant insights.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <h3 class="feature-title">Interactive Q&A</h3>
+                    <p class="feature-description">
+                        Ask questions about your documents in natural language and receive accurate, contextual answers instantly.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-globe"></i>
+                    </div>
+                    <h3 class="feature-title">Multilingual Support</h3>
+                    <p class="feature-description">
+                        Interact with your documents in 10+ languages including English, Spanish, French, German, Hindi, and more.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                    <h3 class="feature-title">Powered by Groq</h3>
+                    <p class="feature-description">
+                        Lightning-fast responses powered by Groq's cutting-edge AI infrastructure and advanced language models.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h3 class="feature-title">Chat History</h3>
+                    <p class="feature-description">
+                        All your conversations are saved and searchable, so you can always refer back to previous insights.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h3 class="feature-title">Secure & Private</h3>
+                    <p class="feature-description">
+                        Your documents and API keys are encrypted and secure. Your data privacy is our top priority.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="how-it-works-section">
+    <div class="container">
+        <div class="section-header text-center">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-description">Get started in three simple steps</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Upload Your PDF</h3>
+                    <p class="step-description">
+                        Simply drag and drop your PDF document or click to upload. We support documents up to 16MB.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Choose Language</h3>
+                    <p class="step-description">
+                        Select your preferred language from our dropdown menu. The AI will respond in your chosen language.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Start Chatting</h3>
+                    <p class="step-description">
+                        Ask questions about your document or request summaries. Get instant, accurate answers.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-card">
+            <h2 class="cta-title">Ready to Transform Your PDF Workflow?</h2>
+            <p class="cta-description">
+                Join thousands of users who are already using AI to interact with their documents more efficiently.
+            </p>
+            <a href="{{ url_for('signup') }}" class="btn btn-light btn-lg">
+                Create Your Free Account
+                <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="footer-brand">
+                    <i class="bi bi-file-earmark-pdf"></i>
+                    PDF Summarizer
+                </div>
+                <p class="footer-description">
+                    Intelligent PDF analysis and multilingual Q&A powered by advanced AI technology.
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="footer-copyright">
+                    &copy; 2026 PDF Summarizer. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+{% endblock %}

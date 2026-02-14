@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Chat History - PDF Summarizer{% endblock %}
+
+{% block content %}
+<div class="history-page">
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="page-title">
+                    <i class="bi bi-clock-history me-2"></i>
+                    Chat History
+                </h2>
+                <p class="page-description">
+                    View and search your previous conversations
+                </p>
+            </div>
+            <button class="btn btn-outline-danger" id="clearHistoryBtn">
+                <i class="bi bi-trash me-2"></i>
+                Clear All History
+            </button>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Filters -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" class="form-control" id="searchInput" placeholder="Search messages...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="languageFilter">
+                                <option value="">All Languages</option>
+                                <option value="English">English</option>
+                                <option value="Spanish">Spanish</option>
+                                <option value="French">French</option>
+                                <option value="German">German</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Arabic">Arabic</option>
+                                <option value="Chinese">Chinese</option>
+                                <option value="Japanese">Japanese</option>
+                                <option value="Portuguese">Portuguese</option>
+                                <option value="Russian">Russian</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="roleFilter">
+                                <option value="">All Messages</option>
+                                <option value="user">My Messages</option>
+                                <option value="assistant">AI Responses</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- History Container -->
+                    <div id="historyContainer">
+                        <div class="text-center py-5">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const historyContainer = document.getElementById('historyContainer');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const searchInput = document.getElementById('searchInput');
+    const languageFilter = document.getElementById('languageFilter');
+    const roleFilter = document.getElementById('roleFilter');
+    
+    let allMessages = [];
+    let filteredMessages = [];
+    
+    // Load history
+    loadHistory();
+    
+    async function loadHistory() {
+        try {
+            const response = await fetch('/api/history');
+            const data = await response.json();
+            
+            if (data.messages && data.messages.length > 0) {
+                allMessages = data.messages;
+                filteredMessages = allMessages;
+                displayHistory(filteredMessages);
+            } else {
+                historyContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-chat-left-text display-1 text-muted"></i>
+                        <p class="text-muted mt-3">No chat history yet. Start a conversation to see it here!</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            historyContainer.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Error loading chat history
+                </div>
+            `;
+        }
+    }
+    
+    function displayHistory(messages) {
+        if (messages.length === 0) {
+            historyContainer.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-search display-1 text-muted"></i>
+                    <p class="text-muted mt-3">No messages found matching your filters</p>
+                </div>
+            `;
+            return;
+        }
+        
+        historyContainer.innerHTML = '';
+        
+        // Group messages by conversation (consecutive messages)
+        let currentGroup = null;
+        let currentDate = null;
+        
+        messages.forEach(msg => {
+            const msgDate = new Date(msg.timestamp).toLocaleDateString();
+            
+            // Add date separator
+            if (msgDate !== currentDate) {
+                const dateSeparator = document.createElement('div');
+                dateSeparator.className = 'history-date-separator';
+                dateSeparator.textContent = msgDate;
+                historyContainer.appendChild(dateSeparator);
+                currentDate = msgDate;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `history-message ${msg.role}-message`;
+            
+            const time = new Date(msg.timestamp).toLocaleTimeString([], { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="d-flex align-items-center">
+                        <i class="bi ${msg.role === 'user' ? 'bi-person-fill' : 'bi-robot'} me-2"></i>
+                        <strong>${msg.role === 'user' ? 'You' : 'AI Assistant'}</strong>
+                        ${msg.pdf_name ? `<span class="badge bg-info ms-2"><i class="bi bi-file-earmark-pdf me-1"></i>${msg.pdf_name}</span>` : ''}
+                        <span class="badge bg-secondary ms-2">${msg.language}</span>
+                    </div>
+                    <small class="text-muted">${time}</small>
+                </div>
+                <div class="message-text">${escapeHtml(msg.message)}</div>
+            `;
+            
+            historyContainer.appendChild(messageDiv);
+        });
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Search functionality
+    searchInput.addEventListener('input', filterMessages);
+    languageFilter.addEventListener('change', filterMessages);
+    roleFilter.addEventListener('change', filterMessages);
+    
+    function filterMessages() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const language = languageFilter.value;
+        const role = roleFilter.value;
+        
+        filteredMessages = allMessages.filter(msg => {
+            const matchesSearch = !searchTerm || msg.message.toLowerCase().includes(searchTerm);
+            const matchesLanguage = !language || msg.language === language;
+            const matchesRole = !role || msg.role === role;
+            
+            return matchesSearch && matchesLanguage && matchesRole;
+        });
+        
+        displayHistory(filteredMessages);
+    }
+    
+    // Clear history
+    clearHistoryBtn.addEventListener('click', async function() {
+        if (!confirm('Are you sure you want to delete all chat history? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/history/clear', {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('Chat history cleared', 'success');
+                allMessages = [];
+                filteredMessages = [];
+                historyContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="bi bi-chat-left-text display-1 text-muted"></i>
+                        <p class="text-muted mt-3">No chat history yet. Start a conversation to see it here!</p>
+                    </div>
+                `;
+            } else {
+                showNotification(data.message || 'Error clearing history', 'error');
+            }
+        } catch (error) {
+            showNotification('Error clearing history', 'error');
+        }
+    });
+});
+</script>
+{% endblock %}

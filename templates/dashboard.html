@@ -1,0 +1,631 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - PDF Summarizer{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="row g-4">
+        <!-- PDF Upload Section -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-file-earmark-arrow-up me-2"></i>
+                        Upload PDF
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="bi bi-cloud-upload"></i>
+                        </div>
+                        <p class="upload-text">Drag & drop your PDF here</p>
+                        <p class="upload-subtext">or</p>
+                        <button type="button" class="btn btn-primary" onclick="document.getElementById('pdfFile').click()">
+                            Browse Files
+                        </button>
+                        <input type="file" id="pdfFile" accept=".pdf" class="d-none">
+                        <small class="text-muted mt-2 d-block">Max file size: 16MB</small>
+                    </div>
+                    
+                    <div class="upload-status d-none" id="uploadStatus">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger me-2 fs-4"></i>
+                                <div>
+                                    <div class="fw-semibold" id="pdfName">document.pdf</div>
+                                    <small class="text-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Processed successfully
+                                    </small>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger" id="clearPdfBtn" title="Clear PDF">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="progress d-none mt-3" id="uploadProgress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- My PDFs List -->
+            <div class="card mt-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-folder2-open me-2"></i>
+                        My PDFs
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" id="refreshPdfsBtn" title="Refresh">
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="pdf-list" id="pdfList">
+                        <div class="text-center p-4 text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-2 mb-0">No PDFs uploaded yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Language Selection -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-translate me-2"></i>
+                        Response Language
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <select class="form-select" id="languageSelect">
+                        <option value="English" selected>English</option>
+                        <option value="Spanish">Spanish (Español)</option>
+                        <option value="French">French (Français)</option>
+                        <option value="German">German (Deutsch)</option>
+                        <option value="Hindi">Hindi (हिन्दी)</option>
+                        <option value="Arabic">Arabic (العربية)</option>
+                        <option value="Chinese">Chinese (中文)</option>
+                        <option value="Japanese">Japanese (日本語)</option>
+                        <option value="Portuguese">Portuguese (Português)</option>
+                        <option value="Russian">Russian (Русский)</option>
+                    </select>
+                    <small class="text-muted mt-2 d-block">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Change language anytime during chat
+                    </small>
+                    <small class="text-muted mt-1 d-block">
+                        <i class="bi bi-lightbulb me-1"></i>
+                        <strong>Tip:</strong> Ask for "summary" or "overview" to get comprehensive details about the entire PDF
+                    </small>
+                </div>
+            </div>
+            
+            <!-- Mode Indicator -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="mode-indicator me-2" id="modeIndicator">
+                            <i class="bi bi-chat-dots"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold" id="modeTitle">General Chat Mode</div>
+                            <small class="text-muted" id="modeDescription">
+                                Upload a PDF to enable document-based Q&A
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Interface -->
+        <div class="col-lg-8">
+            <div class="card chat-card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-chat-left-text me-2"></i>
+                        AI Assistant
+                    </h5>
+                </div>
+                <div class="card-body chat-body">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message assistant-message">
+                            <div class="message-avatar">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <div class="message-text">
+                                    Hello! I'm your AI assistant. Upload a PDF to ask detailed questions about it. I can provide comprehensive summaries, answer specific questions, and respond in 10+ languages. Just ask!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer chat-footer">
+                    <form id="chatForm" class="chat-input-form">
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                class="form-control chat-input" 
+                                id="messageInput" 
+                                placeholder="Type your message..."
+                                autocomplete="off"
+                            >
+                            <button class="btn btn-primary" type="submit" id="sendBtn">
+                                <i class="bi bi-send-fill"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const pdfFileInput = document.getElementById('pdfFile');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const clearPdfBtn = document.getElementById('clearPdfBtn');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatForm = document.getElementById('chatForm');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const languageSelect = document.getElementById('languageSelect');
+    const modeIndicator = document.getElementById('modeIndicator');
+    const modeTitle = document.getElementById('modeTitle');
+    const modeDescription = document.getElementById('modeDescription');
+    
+    let hasPdfContext = false;
+    
+    // Check for active PDF on page load
+    checkActivePDF();
+    
+    async function checkActivePDF() {
+        try {
+            const response = await fetch('/api/pdfs');
+            const data = await response.json();
+            
+            if (data.success && data.pdfs.length > 0) {
+                const activePdf = data.pdfs.find(pdf => pdf.is_active);
+                if (activePdf) {
+                    uploadArea.classList.add('d-none');
+                    uploadStatus.classList.remove('d-none');
+                    document.getElementById('pdfName').textContent = activePdf.filename;
+                    hasPdfContext = true;
+                    updateMode(true);
+                }
+            }
+        } catch (error) {
+            console.error('Error checking active PDF:', error);
+        }
+    }
+    
+    // Drag and drop handlers
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.add('drag-over');
+        }, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => {
+            uploadArea.classList.remove('drag-over');
+        }, false);
+    });
+    
+    uploadArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        
+        if (files.length > 0) {
+            handleFiles(files);
+        }
+    }
+    
+    pdfFileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            handleFiles(this.files);
+        }
+    });
+    
+    async function handleFiles(files) {
+        const file = files[0];
+        
+        if (file.type !== 'application/pdf') {
+            showNotification('Please upload a PDF file', 'error');
+            return;
+        }
+        
+        if (file.size > 16 * 1024 * 1024) {
+            showNotification('File size must be less than 16MB', 'error');
+            return;
+        }
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Show progress
+        uploadArea.classList.add('d-none');
+        uploadProgress.classList.remove('d-none');
+        uploadProgress.querySelector('.progress-bar').style.width = '30%';
+        
+        try {
+            const response = await fetch('/api/upload-pdf', {
+                method: 'POST',
+                body: formData
+            });
+            
+            uploadProgress.querySelector('.progress-bar').style.width = '100%';
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                setTimeout(() => {
+                    uploadProgress.classList.add('d-none');
+                    uploadStatus.classList.remove('d-none');
+                    document.getElementById('pdfName').textContent = data.filename;
+                    hasPdfContext = true;
+                    updateMode(true);
+                    showNotification('PDF ready! Start chatting.', 'success');
+                    
+                    // Reload PDFs list
+                    loadPDFs();
+                }, 500);
+            } else {
+                throw new Error(data.message);
+            }
+        } catch (error) {
+            uploadProgress.classList.add('d-none');
+            uploadArea.classList.remove('d-none');
+            uploadProgress.querySelector('.progress-bar').style.width = '0%';
+            showNotification(error.message || 'Error uploading PDF', 'error');
+        }
+    }
+    
+    clearPdfBtn.addEventListener('click', async function() {
+        try {
+            const response = await fetch('/api/clear-pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                uploadStatus.classList.add('d-none');
+                uploadArea.classList.remove('d-none');
+                hasPdfContext = false;
+                updateMode(false);
+                showNotification('PDF context cleared', 'success');
+                
+                // Reload PDFs list
+                loadPDFs();
+            }
+        } catch (error) {
+            showNotification('Error clearing PDF', 'error');
+        }
+    });
+    
+    function updateMode(hasPdf) {
+        if (hasPdf) {
+            modeIndicator.innerHTML = '<i class="bi bi-file-earmark-pdf"></i>';
+            modeIndicator.classList.add('active');
+            modeTitle.textContent = 'Document Q&A Mode';
+            modeDescription.textContent = 'Ask for summaries, overviews, or specific questions about your PDF';
+        } else {
+            modeIndicator.innerHTML = '<i class="bi bi-chat-dots"></i>';
+            modeIndicator.classList.remove('active');
+            modeTitle.textContent = 'General Chat Mode';
+            modeDescription.textContent = 'Upload a PDF to enable document-based Q&A';
+        }
+    }
+    
+    // Chat functionality
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const message = messageInput.value.trim();
+        if (!message) return;
+        
+        // Add user message to chat
+        addMessage(message, 'user');
+        messageInput.value = '';
+        
+        // Disable input
+        messageInput.disabled = true;
+        sendBtn.disabled = true;
+        
+        // Show typing indicator
+        const typingId = addTypingIndicator();
+        
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: message,
+                    language: languageSelect.value
+                })
+            });
+            
+            const data = await response.json();
+            
+            removeTypingIndicator(typingId);
+            
+            if (data.success) {
+                addMessage(data.response, 'assistant');
+            } else {
+                addMessage(data.message || 'Sorry, I encountered an error.', 'assistant', true);
+            }
+        } catch (error) {
+            removeTypingIndicator(typingId);
+            addMessage('Sorry, I encountered an error. Please try again.', 'assistant', true);
+        } finally {
+            messageInput.disabled = false;
+            sendBtn.disabled = false;
+            messageInput.focus();
+        }
+    });
+    
+    function addMessage(text, role, isError = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${role}-message${isError ? ' error-message' : ''}`;
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.innerHTML = role === 'user' ? 
+            '<i class="bi bi-person-fill"></i>' : 
+            '<i class="bi bi-robot"></i>';
+        
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        
+        const messageText = document.createElement('div');
+        messageText.className = 'message-text';
+        messageText.textContent = text;
+        
+        content.appendChild(messageText);
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(content);
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function addTypingIndicator() {
+        const id = 'typing-' + Date.now();
+        const messageDiv = document.createElement('div');
+        messageDiv.id = id;
+        messageDiv.className = 'chat-message assistant-message';
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        return id;
+    }
+    
+    function removeTypingIndicator(id) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.remove();
+        }
+    }
+    
+    // PDF Management Functions
+    const pdfList = document.getElementById('pdfList');
+    const refreshPdfsBtn = document.getElementById('refreshPdfsBtn');
+    
+    // Load PDFs on page load
+    loadPDFs();
+    
+    // Refresh button
+    refreshPdfsBtn.addEventListener('click', loadPDFs);
+    
+    async function loadPDFs() {
+        try {
+            const response = await fetch('/api/pdfs');
+            const data = await response.json();
+            
+            if (data.success && data.pdfs.length > 0) {
+                renderPDFs(data.pdfs);
+            } else {
+                pdfList.innerHTML = `
+                    <div class="text-center p-4 text-muted">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2 mb-0">No PDFs uploaded yet</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Error loading PDFs:', error);
+        }
+    }
+    
+    function renderPDFs(pdfs) {
+        if (pdfs.length === 0) {
+            pdfList.innerHTML = `
+                <div class="text-center p-4 text-muted">
+                    <i class="bi bi-inbox fs-1"></i>
+                    <p class="mt-2 mb-0">No PDFs uploaded yet</p>
+                </div>
+            `;
+            return;
+        }
+        
+        pdfList.innerHTML = pdfs.map(pdf => `
+            <div class="pdf-item ${pdf.is_active ? 'active' : ''}" data-pdf-id="${pdf.id}">
+                <div class="pdf-item-content">
+                    <div class="d-flex align-items-start">
+                        <i class="bi bi-file-earmark-pdf-fill text-danger me-2 fs-4"></i>
+                        <div class="flex-grow-1">
+                            <div class="pdf-item-name">${pdf.original_filename}</div>
+                            <div class="pdf-item-meta">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar3 me-1"></i>
+                                    ${new Date(pdf.uploaded_at).toLocaleDateString()}
+                                </small>
+                                <small class="text-muted ms-2">
+                                    <i class="bi bi-file-earmark me-1"></i>
+                                    ${(pdf.file_size / 1024).toFixed(1)} KB
+                                </small>
+                                ${pdf.page_count ? `
+                                <small class="text-muted ms-2">
+                                    <i class="bi bi-file-text me-1"></i>
+                                    ${pdf.page_count} pages
+                                </small>
+                                ` : ''}
+                            </div>
+                            ${pdf.is_active ? '<span class="badge bg-success mt-1">Active</span>' : ''}
+                        </div>
+                        <div class="pdf-item-actions">
+                            ${!pdf.is_active ? `
+                            <button class="btn btn-sm btn-outline-primary me-1 select-pdf-btn" data-pdf-id="${pdf.id}" title="Select & Chat">
+                                <i class="bi bi-chat-dots"></i>
+                            </button>
+                            ` : ''}
+                            <button class="btn btn-sm btn-outline-danger delete-pdf-btn" data-pdf-id="${pdf.id}" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        // Add event listeners
+        document.querySelectorAll('.select-pdf-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const pdfId = this.getAttribute('data-pdf-id');
+                selectPDF(pdfId);
+            });
+        });
+        
+        document.querySelectorAll('.delete-pdf-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const pdfId = this.getAttribute('data-pdf-id');
+                if (confirm('Are you sure you want to delete this PDF?')) {
+                    deletePDF(pdfId);
+                }
+            });
+        });
+    }
+    
+    async function selectPDF(pdfId) {
+        // Disable all select buttons during selection
+        const selectButtons = document.querySelectorAll('.select-pdf-btn');
+        selectButtons.forEach(btn => btn.disabled = true);
+        
+        // Show loading notification
+        const loadingNotif = showNotification('Loading PDF...', 'info');
+        
+        try {
+            const response = await fetch(`/api/pdfs/${pdfId}/select`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification(data.message, 'success');
+                
+                // Update UI
+                uploadArea.classList.add('d-none');
+                uploadStatus.classList.remove('d-none');
+                document.getElementById('pdfName').textContent = data.pdf.filename;
+                hasPdfContext = true;
+                updateMode(true);
+                
+                // Reload PDFs list
+                loadPDFs();
+                
+                // Clear chat messages
+                chatMessages.innerHTML = `
+                    <div class="chat-message assistant-message">
+                        <div class="message-avatar">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Now chatting with <strong>${data.pdf.filename}</strong>. Ask me anything about this document!
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                showNotification(data.message, 'error');
+                // Re-enable buttons on error
+                selectButtons.forEach(btn => btn.disabled = false);
+            }
+        } catch (error) {
+            showNotification('Error selecting PDF', 'error');
+            // Re-enable buttons on error
+            selectButtons.forEach(btn => btn.disabled = false);
+        }
+    }
+    
+    async function deletePDF(pdfId) {
+        try {
+            const response = await fetch(`/api/pdfs/${pdfId}`, {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('PDF deleted successfully', 'success');
+                loadPDFs();
+                
+                // If it was the active PDF, clear the UI
+                const activeItem = document.querySelector('.pdf-item.active');
+                if (activeItem && activeItem.getAttribute('data-pdf-id') == pdfId) {
+                    uploadArea.classList.remove('d-none');
+                    uploadStatus.classList.add('d-none');
+                    hasPdfContext = false;
+                    updateMode(false);
+                }
+            } else {
+                showNotification(data.message, 'error');
+            }
+        } catch (error) {
+            showNotification('Error deleting PDF', 'error');
+        }
+    }
+});
+</script>
+{% endblock %}

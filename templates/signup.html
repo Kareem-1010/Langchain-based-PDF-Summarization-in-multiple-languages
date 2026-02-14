@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up - PDF Summarizer{% endblock %}
+
+{% block public_content %}
+<section class="auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2 class="auth-title">Create Account</h2>
+                        <p class="auth-description">Get started with your free account</p>
+                    </div>
+                    
+                    <form id="signupForm" class="auth-form">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                                <button class="btn btn-outline-secondary password-toggle" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Password must be at least 6 characters</small>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3" id="signupBtn">
+                            <span class="btn-text">Create Account</span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Already have an account? 
+                                <a href="{{ url_for('login') }}" class="text-decoration-none">Sign in</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const signupForm = document.getElementById('signupForm');
+    const signupBtn = document.getElementById('signupBtn');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    // Password toggle
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('bi-eye');
+        icon.classList.toggle('bi-eye-slash');
+    });
+    
+    // Form submission
+    signupForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        // Show loading state
+        signupBtn.disabled = true;
+        signupBtn.querySelector('.btn-text').textContent = 'Creating account...';
+        signupBtn.querySelector('.spinner-border').classList.remove('d-none');
+        
+        try {
+            const response = await fetch('/signup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, email, password })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('Account created! Redirecting to login...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+            } else {
+                showNotification(data.message || 'Signup failed', 'error');
+                signupBtn.disabled = false;
+                signupBtn.querySelector('.btn-text').textContent = 'Create Account';
+                signupBtn.querySelector('.spinner-border').classList.add('d-none');
+            }
+        } catch (error) {
+            showNotification('An error occurred. Please try again.', 'error');
+            signupBtn.disabled = false;
+            signupBtn.querySelector('.btn-text').textContent = 'Create Account';
+            signupBtn.querySelector('.spinner-border').classList.add('d-none');
+        }
+    });
+});
+</script>
+{% endblock %}

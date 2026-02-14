@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Login - PDF Summarizer{% endblock %}
+
+{% block public_content %}
+<section class="auth-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h2 class="auth-title">Welcome Back</h2>
+                        <p class="auth-description">Sign in to your account to continue</p>
+                    </div>
+                    
+                    <form id="loginForm" class="auth-form">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                                <button class="btn btn-outline-secondary password-toggle" type="button" id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 mb-3" id="loginBtn">
+                            <span class="btn-text">Sign In</span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                        
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Don't have an account? 
+                                <a href="{{ url_for('signup') }}" class="text-decoration-none">Sign up</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    
+    // Password toggle
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = type;
+        
+        const icon = this.querySelector('i');
+        icon.classList.toggle('bi-eye');
+        icon.classList.toggle('bi-eye-slash');
+    });
+    
+    // Form submission
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        
+        // Show loading state
+        loginBtn.disabled = true;
+        loginBtn.querySelector('.btn-text').textContent = 'Signing in...';
+        loginBtn.querySelector('.spinner-border').classList.remove('d-none');
+        
+        try {
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, password })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showNotification('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1000);
+            } else {
+                showNotification(data.message || 'Login failed', 'error');
+                loginBtn.disabled = false;
+                loginBtn.querySelector('.btn-text').textContent = 'Sign In';
+                loginBtn.querySelector('.spinner-border').classList.add('d-none');
+            }
+        } catch (error) {
+            showNotification('An error occurred. Please try again.', 'error');
+            loginBtn.disabled = false;
+            loginBtn.querySelector('.btn-text').textContent = 'Sign In';
+            loginBtn.querySelector('.spinner-border').classList.add('d-none');
+        }
+    });
+});
+</script>
+{% endblock %}
